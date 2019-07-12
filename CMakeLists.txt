@@ -3,4 +3,4 @@ project(client.c C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(client client.c)
+add_executable(client client.c client.h cSocket.c cSocket.h)
