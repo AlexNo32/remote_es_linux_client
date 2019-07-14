@@ -8,7 +8,7 @@
  ============================================================================
  */
 
-#include "cSocket.h"
+#include "header.h"
 
 void cgets(char *comm);
 
@@ -57,5 +57,6 @@ void cgets(char *comm){
     *comm = '\0';
 }
 
-//void struct command
+void assemble(){
 
+}

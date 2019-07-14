@@ -2,10 +2,10 @@
 // Created by charname on 7/7/19.
 //
 
-#include "cSocket.h"
+#include "header.h"
 
 int process(SOCKET sock);
-void help();
+void usage();
 
 int main(int argc, char *argv[]) {
     setbuf(stdout, NULL);
@@ -15,12 +15,9 @@ int main(int argc, char *argv[]) {
         printf("[INFO] USAGE: $> client 'netclient host'.\n");
         return EXIT_FAILURE;
     }
-    SOCKET clientFd = connector(argv[1]);
-    if(clientFd == -1){
-        printf("[ERROR] No service found...\n");
-        return EXIT_FAILURE;
-    }
 
+    SOCKET clientFd = connector(argv[1]);
+    usage();
     process(clientFd);
 
     return EXIT_SUCCESS;
@@ -29,9 +26,6 @@ int main(int argc, char *argv[]) {
 /* communication with server */
 int process(SOCKET sock){
     int loop = 1;
-    // usage
-    help();
-
     //  file descriptor
     fd_set read_flags, write_flags;
     struct timeval waitd;
@@ -65,7 +59,7 @@ int process(SOCKET sock){
                     //make a request
                     //if (requestAssemble(sock) == -1)
                     //   loop = 0;
-                    //Sleep(500);
+                    sleep(5);
                 }
         }
 
@@ -81,7 +75,7 @@ int nonblock(SOCKET fd) {
 }
 
 /* program usage*/
-void help() {
+void usage() {
     printf("\nCommand Help:\n");
     printf("A.	put progname sourcefile[s] [-f]: upload sourcefiles to progname dir, -f overwrite if exists.\n");
     printf("B.	get progname sourcefile : download sourcefile from progname dir to client screen.\n");
