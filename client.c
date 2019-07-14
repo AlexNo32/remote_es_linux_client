@@ -7,7 +7,7 @@
 int process(SOCKET sock);
 void help();
 
-        int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
     setbuf(stdout, NULL);
 
     // command line argument for server address
@@ -64,7 +64,7 @@ int process(SOCKET sock){
                     FD_CLR(sock, &write_flags);
                     //make a request
                     //if (requestAssemble(sock) == -1)
-                     //   loop = 0;
+                    //   loop = 0;
                     //Sleep(500);
                 }
         }

@@ -1,6 +1,12 @@
-//
-// Created by charname on 7/9/19.
-//
+/*
+ ============================================================================
+ Name        : Simple Remote Execution System Linux client
+ Author      : Alex
+ Version     : 0.9v
+ Copyright   : No copyright
+ Description : 2803ICT assignment 1, Ansi-style, CLion + Ubuntu
+ ============================================================================
+ */
 
 #include "cSocket.h"
 
@@ -13,8 +19,8 @@ SOCKET connector(char *host) {
     listenFd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (listenFd == -1){
-        printf("[ERROR] cannot create a client socket. \n");
-        return -1;
+        perror("[ERROR] cannot create a client socket:");
+        exit(EXIT_FAILURE);
     }
     printf("[INFO] client socket created: %d. \n", listenFd);
 
@@ -28,16 +34,16 @@ SOCKET connector(char *host) {
     addrClient.sin_port = htons(DEFAULTPORT);
 
     if(connect(listenFd, (SOCKADDR*)&addrClient, sizeof(addrClient)) == -1){
-        printf("[ERROR] cannot connect to server.\n");
+        perror("[ERROR] cannot connect to server:");
         close(listenFd);
-        return -1;
+        exit(EXIT_FAILURE);
     }
-    printf("[INFO] client connected to server: %s. \n", host);
+    printf("[INFO] client is connected to server: %s. \n", host);
 
     if(nonblock(listenFd) == -1){
-        printf("[ERROR] unable to set nonblocking mode. \n");
+        perror("[ERROR] unable to set non-blocking mode:");
         close(listenFd);
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
     return listenFd;
@@ -47,10 +53,10 @@ SOCKET connector(char *host) {
 void sockOpt(SOCKET listenFd) {
     int sockOpt = 1;
     if(setsockopt(listenFd, SOL_SOCKET, SO_KEEPALIVE, &sockOpt, sizeof(sockOpt)) == -1)
-        printf("[ERROR] socket set KEEPLIVE failed. \n");
+        perror("[ERROR] socket set KEEPLIVE failed:");
 
     if(setsockopt(listenFd, IPPROTO_TCP, TCP_NODELAY, &sockOpt, sizeof(sockOpt)) == -1)
-        printf("[ERROR] socket set NODELAY failed. \n");
+        perror("[ERROR] socket set NODELAY failed:");
 }
 
 /* non blocking setting */
