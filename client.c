@@ -1,16 +1,22 @@
-//
-// Created by charname on 7/7/19.
-//
+/*
+ ============================================================================
+ Name        : Simple Remote Execution System Linux client
+ Author      : Alex
+ Version     : 0.9v
+ Copyright   : No copyright
+ Description : 2803ICT assignment 1, Ansi-style, CLion + Ubuntu
+ ============================================================================
+ */
 
-#include "header.h"
+#include "client.h"
 
-int process(SOCKET sock);
+void process(SOCKET sock);
 void usage();
 
+/* main entry */
 int main(int argc, char *argv[]) {
     setbuf(stdout, NULL);
 
-    // command line argument for server address
     if(argc < 2){
         printf("[INFO] USAGE: $> client 'netclient host'.\n");
         return EXIT_FAILURE;
@@ -24,13 +30,14 @@ int main(int argc, char *argv[]) {
 }
 
 /* communication with server */
-int process(SOCKET sock){
-    int loop = 1;
-    //  file descriptor
+void process(SOCKET sock){
+    /* file descriptor */
     fd_set read_flags, write_flags;
-    struct timeval waitd;
 
-    // polling wait I/O
+    struct timeval waitd;
+    int loop = 1;
+
+    /* wait for I/O */
     while (loop) {
         waitd.tv_sec = 10;//timeout 10 seconds
         FD_ZERO(&read_flags);
@@ -41,37 +48,31 @@ int process(SOCKET sock){
         switch(select(sock + 1, &read_flags, &write_flags, (fd_set*) 0, &waitd)){
 
             case -1: //select failed.
-                printf("[ERROR] client polling select failed. \n");
+                printf("[ERROR] Client polling select function failed... \n");
 
             case 0: //keep polling
                 break;
 
             default:
-                // ready for reading
+                /* ready for read */
                 if (FD_ISSET(sock, &read_flags)) {
                     FD_CLR(sock, &read_flags);
+                    /* receive response (from server) */
                     //responseDisplay(sock);
                 }
 
-                // ready for writing
+                /* ready for write */
                 if (FD_ISSET(sock, &write_flags)) {
                     FD_CLR(sock, &write_flags);
-                    //make a request
-                    //if (requestAssemble(sock) == -1)
-                    //   loop = 0;
-                    sleep(5);
+                    /* making a request (to server) */
+                    if (make_request(sock) == 0)
+                        loop = 0;
+                    sleep(1);
                 }
         }
 
     }
-    return EXIT_SUCCESS;
-}
-
-
-/* non blocking setting */
-int nonblock(SOCKET fd) {
-    int flags = fcntl(fd, F_GETFL, 0);
-    return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    return;
 }
 
 /* program usage*/
