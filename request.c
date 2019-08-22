@@ -23,10 +23,10 @@ int getFileSize(FILE * fp);
 
 int make_request(SOCKET sock){
     char comm[STDBUF]; // user input buffer
-    Request req;
-    Buffer buf;
     int i;
 
+    Request req;
+    Buffer buf;
     memset(&req, 0, sizeof(Request));
     buffer_init(&buf);
 
@@ -38,7 +38,11 @@ int make_request(SOCKET sock){
 
     /* 3, send data */
     check(sendRequest(&req, &buf) > 0, "[ERROR] Dir or file doesn't exist.");
-    send_msg(sock, &buf);
+    send_Msg(sock, &buf);
+
+    /* debug */
+    printf("client send %s\n", buf.data);
+
     buffer_free(&buf);
 
 
@@ -46,11 +50,13 @@ int make_request(SOCKET sock){
     for(i = 0; i < req.files; i++){
         buffer_init(&buf);
         loadFile(&buf, req.filev[i], req.dirname);
-        send_msg(sock, &buf);
+        send_Msg(sock, &buf);
         buffer_free(&buf);
     }
 
-    return 0;
+    /* free Request */
+
+    return 1;
     error:
     return -1;
 }
@@ -101,27 +107,31 @@ int builtRequest(char * comm, Request * req){
 }
 
 int sendRequest(Request *req, Buffer *buf){
-    buffer_append_short(buf, req->ptype);
     buffer_append_timestamp(buf, req->timeStamp);
-
+    buffer_append_short(buf, req->ptype);
     buffer_append_short(buf, req->fmode);
     buffer_append_short(buf, req->lmode);
     buffer_append_short(buf, req->args);
     buffer_append_short(buf, req->files);
 
-    if(req->dirname != NULL)
+    if(req->dirname != NULL){
         buffer_append(buf, req->dirname, strlen(req->dirname));
+        buffer_append(buf, "&", 1);
+    }
+
 
     int i;
     for(i = 0; i < req->files; i ++){
         if(fileExist(req->filev[i], req->dirname) > 0){
             buffer_append(buf, req->filev[i], strlen(req->filev[i]));
+            buffer_append(buf, "&", 1);
         } else
             return -1;
     }
 
     for(i = 0; i < req->args; i++){
         buffer_append(buf, req->argv[i], strlen(req->argv[i]));
+        buffer_append(buf, "&", 1);
     }
 
     return 1;

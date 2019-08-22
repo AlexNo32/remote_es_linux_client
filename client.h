@@ -52,9 +52,10 @@ enum PTYPE{
 
 SOCKET connector(char *host);
 int make_request(SOCKET sock);
+int recv_response(SOCKET sock);
 
-int recv_msg(SOCKET sockFd, Buffer *buf);
-int send_msg(SOCKET sockFd, Buffer *buf);
+int recv_Msg(SOCKET sockFd, Buffer *buf);
+int send_Msg(SOCKET sockFd, Buffer *buf);
 
 /* * Package struct
  *  1. timestamp ()
@@ -78,6 +79,13 @@ typedef struct {
     char *argv[10];
     char *filev[10];
 } Request;
+
+typedef struct {
+    unsigned long timeStamp; // length :13
+    unsigned short ptype; // [4 - 9]
+    unsigned short success; // 1/0 cmd execute success or not
+    char *response; // response message
+} Response;
 
 #define LONG_MODE "-l"
 #define FORCE_MODE "-f"

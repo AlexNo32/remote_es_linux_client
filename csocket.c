@@ -75,18 +75,23 @@ void closeConnection(SOCKET sock){
 #endif
 }
 
-int recv_msg(SOCKET sockFd, Buffer *buf){
+/* receive message */
+int recv_Msg(SOCKET sockFd, Buffer *buf){
     int nCount;
     char buff[STDBUF];
 
-//    while( (nCount = recv(sockFd, buff, STDBUF, MSG_WAITALL)) > 0 ){
-    while( (nCount = recv(sockFd, buff, STDBUF, MSG_DONTWAIT)) > 0 ){
+    while(1){
+        nCount = recv(sockFd, buff, STDBUF, 0);
         buffer_append(buf, buff, nCount);
+        if(nCount < STDBUF)
+            break;
     }
+
     return 0;
 }
 
-int send_msg(SOCKET sockFd, Buffer *buf){
+
+int send_Msg(SOCKET sockFd, Buffer *buf){
     if(send(sockFd, buf->data, buf->size, 0) == -1){
         perror("[ERROR] send failed ");
         return -1;

@@ -58,7 +58,7 @@ void process(SOCKET sock){
                 if (FD_ISSET(sock, &read_flags)) {
                     FD_CLR(sock, &read_flags);
                     /* receive response (from server) */
-                    //responseDisplay(sock);
+                    recv_response(sock);
                 }
 
                 /* ready for write */
