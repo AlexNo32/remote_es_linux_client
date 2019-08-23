@@ -57,6 +57,8 @@ int recv_response(SOCKET sock);
 int recv_Msg(SOCKET sockFd, Buffer *buf);
 int send_Msg(SOCKET sockFd, Buffer *buf);
 
+
+long long getSystemTime();
 /* * Package struct
  *  1. timestamp ()
  *  2. package type (put, run, sys, etc..)
