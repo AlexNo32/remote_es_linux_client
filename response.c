@@ -14,16 +14,15 @@ int msgOutput(Response *resp);
 int timeCost(long long prev);
 int getPtype(short p, char *pname);
 
+void responseInit(Response *resp);
+void responseFree(Response *resp);
+
 int recv_response(SOCKET sock){
+    int q;
     Response resp;
     Buffer buf;
-
-    int i;
-
-    memset(&resp, 0, sizeof(Response));
+    responseInit(&resp);
     buffer_init(&buf);
-
-
 
     /* 1, receive data */
     recv_Msg(sock, &buf);
@@ -31,15 +30,28 @@ int recv_response(SOCKET sock){
     /* debug */
     printf("client receive %s\n", buf.data);
 
-    // TODO 1, time report, 2, 40 lines waits
+    /* 2, write data into response */
     recvResponse(&resp, &buf);
 
-    msgOutput(&resp);
+    /* 3, output message from server */
+    q = msgOutput(&resp);
 
     /* free memory */
+    responseFree(&resp);
 
+    return q;
 }
 
+void responseInit(Response *resp){
+    memset(resp, 0, sizeof(Request));
+    resp->response = malloc(5120);
+}
+
+void responseFree(Response *resp){
+    free(resp->response);
+}
+
+/* 3, output message from server */
 int msgOutput(Response *resp){
     char *p, c;
     int cost, offset, lineCount, bufferCount;
@@ -57,6 +69,15 @@ int msgOutput(Response *resp){
         printf("[CLIENT] Command has %s returned in %d milliseconds\n", p, cost);
 
         while ((c = resp->response[offset++])) {
+
+            if(bufferCount < sizeof(printBuffer))
+                printBuffer[bufferCount++] = c;
+            else{
+                printf("%s", printBuffer);
+                bufferCount = 0;
+                memset(printBuffer, 0, sizeof(char) * 1024);
+            }
+
             if(c == '\n')
                 lineCount ++;
 
@@ -67,22 +88,17 @@ int msgOutput(Response *resp){
                 lineCount = 0;
                 bufferCount = 0;
                 memset(printBuffer, 0, sizeof(char) * 1024);
-            }
-            if(bufferCount < sizeof(printBuffer)){
-                printBuffer[bufferCount++] = c;
-            }else{
-                printBuffer[bufferCount] = '\0';
-
-                printf("%s", printBuffer);
-                bufferCount = 0;
-                memset(printBuffer, 0, sizeof(char) * 1024);
+                continue;
             }
         }
         printf("%s", printBuffer);
     }
+    // clean before return
+
     return 0;
 }
 
+/* 2, write data into response */
 int recvResponse(Response *resp, Buffer *buf){
     char *tmp;
     int nCount = 0;
@@ -112,13 +128,21 @@ int recvResponse(Response *resp, Buffer *buf){
 
 int getPtype(short p, char *pname){
     switch(p){
-        case PUT : pname = "put"; break;
-        case GET : pname = "get"; break;
-        case RUN : pname = "run"; break;
-        case LIST: pname = "list"; break;
-        case SYS : pname = "sys"; break;
-        case QUIT: pname = "quit"; break;
-        default: pname = "Unknown"; break;
+        case PUT : pname = "put";
+            break;
+        case GET : pname = "get";
+            break;
+        case RUN : pname = "run";
+            break;
+        case LIST: pname = "list";
+            break;
+        case SYS : pname = "sys";
+            break;
+        case QUIT: pname = "quit";
+            break;
+        default:
+            pname = "Unknown";
+
     }
 }
 

@@ -90,7 +90,7 @@ int recv_Msg(SOCKET sockFd, Buffer *buf){
     return 0;
 }
 
-
+/* send message */
 int send_Msg(SOCKET sockFd, Buffer *buf){
     if(send(sockFd, buf->data, buf->size, 0) == -1){
         perror("[ERROR] send failed ");

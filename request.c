@@ -14,20 +14,23 @@ void getCommand(char *comm);
 int  builtRequest(char *comm, Request *req);
 int  sendRequest(Request *req, Buffer *buf);
 
-long long getSystemTime();
+void requestInit(Request *req);
+void requestFree(Request *req);
+
 int getCode(char * ptype);
 int sourceFile(char * str);
 int fileExist(char * fileName, char * progName);
 int loadFile(Buffer *buf, char *fileName, char *dirName);
 int getFileSize(FILE * fp);
 
+/* make a request (client to server) */
 int make_request(SOCKET sock){
     char comm[STDBUF]; // user input buffer
     int i;
 
     Request req;
     Buffer buf;
-    memset(&req, 0, sizeof(Request));
+    requestInit(&req);
     buffer_init(&buf);
 
     /* 1, get user input */
@@ -40,11 +43,10 @@ int make_request(SOCKET sock){
     check(sendRequest(&req, &buf) > 0, "[ERROR] Dir or file doesn't exist.");
     send_Msg(sock, &buf);
 
-    /* debug */
+    /****************** debug ****************************/
     printf("client send %s\n", buf.data);
 
     buffer_free(&buf);
-
 
     /* 4, load and send attachment files */
     for(i = 0; i < req.files; i++){
@@ -55,10 +57,33 @@ int make_request(SOCKET sock){
     }
 
     /* free Request */
-
+    requestFree(&req);
     return 1;
+
     error:
+    requestFree(&req);
     return -1;
+}
+
+void requestInit(Request *req){
+    int i;
+    memset(req, 0, sizeof(Request));
+    req->dirname = malloc(50);
+
+    for(i = 0; i < 10; i++){
+        req->argv[i] = malloc(50);
+        req->filev[i] = malloc(50);
+    }
+}
+
+void requestFree(Request *req){
+    int i;
+    free(req->dirname);
+
+    for(i = 0; i < 10; i++){
+        free(req->argv[i]);
+        free(req->filev[i]);
+    }
 }
 
 /* 1, get user input */
@@ -106,6 +131,7 @@ int builtRequest(char * comm, Request * req){
     return 1;
 }
 
+/* 3, write request to buffer */
 int sendRequest(Request *req, Buffer *buf){
     buffer_append_timestamp(buf, req->timeStamp);
     buffer_append_short(buf, req->ptype);
@@ -118,7 +144,6 @@ int sendRequest(Request *req, Buffer *buf){
         buffer_append(buf, req->dirname, strlen(req->dirname));
         buffer_append(buf, "&", 1);
     }
-
 
     int i;
     for(i = 0; i < req->files; i ++){
