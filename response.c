@@ -12,13 +12,13 @@
 int recvResponse(Response *resp, Buffer *buf);
 int msgOutput(Response *resp);
 int timeCost(long long prev);
-int getPtype(short p, char *pname);
+int getPname(short p, char *pname);
 
 void responseInit(Response *resp);
 void responseFree(Response *resp);
 
 int recv_response(SOCKET sock){
-    int q;
+    int quit;
     Response resp;
     Buffer buf;
     responseInit(&resp);
@@ -27,23 +27,20 @@ int recv_response(SOCKET sock){
     /* 1, receive data */
     recv_Msg(sock, &buf);
 
-    /* debug */
-    printf("client receive %s\n", buf.data);
-
     /* 2, write data into response */
     recvResponse(&resp, &buf);
 
     /* 3, output message from server */
-    q = msgOutput(&resp);
+    quit = msgOutput(&resp);
 
     /* free memory */
     responseFree(&resp);
 
-    return q;
+    return quit;
 }
 
 void responseInit(Response *resp){
-    memset(resp, 0, sizeof(Request));
+    memset(resp, 0, sizeof(Response));
     resp->response = malloc(5120);
 }
 
@@ -63,10 +60,15 @@ int msgOutput(Response *resp){
         bufferCount = 0;
         memset(printBuffer, 0, sizeof(char) * 1024);
 
-        getPtype(resp->ptype, p);
+        if(resp->ptype == QUIT){
+            printf("[CLIENT] Client closing...\n");
+            exit(EXIT_SUCCESS);
+        }
+
+        getPname(resp->ptype, p);
         cost = timeCost(resp->timeStamp);
 
-        printf("[CLIENT] Command has %s returned in %d milliseconds\n", p, cost);
+        printf("[CLIENT] Command has %s returned in %d milliseconds.\n", p, cost);
 
         while ((c = resp->response[offset++])) {
 
@@ -92,10 +94,11 @@ int msgOutput(Response *resp){
             }
         }
         printf("%s", printBuffer);
+    }else{
+        printf("[DEBUG] Command exception...");
     }
-    // clean before return
 
-    return 0;
+    return 1;
 }
 
 /* 2, write data into response */
@@ -126,7 +129,7 @@ int recvResponse(Response *resp, Buffer *buf){
     return 0;
 }
 
-int getPtype(short p, char *pname){
+int getPname(short p, char *pname){
     switch(p){
         case PUT : pname = "put";
             break;
@@ -137,8 +140,6 @@ int getPtype(short p, char *pname){
         case LIST: pname = "list";
             break;
         case SYS : pname = "sys";
-            break;
-        case QUIT: pname = "quit";
             break;
         default:
             pname = "Unknown";

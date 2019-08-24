@@ -43,7 +43,7 @@ typedef struct sockaddr SOCKADDR;
 #define check(A, M, ...) if(!(A)) { perror(M); errno = 0; goto error;}
 
 #define DEFAULTPORT  1024
-#define STDBUF 512
+#define STDBUF 1024
 
 //#define "put" 4, "get" 5, "run" 6, "list" 7, "sys" 8, "quit" 9
 enum PTYPE{

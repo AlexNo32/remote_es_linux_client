@@ -43,16 +43,17 @@ int make_request(SOCKET sock){
     check(sendRequest(&req, &buf) > 0, "[ERROR] Dir or file doesn't exist.");
     send_Msg(sock, &buf);
 
-    /****************** debug ****************************/
-    printf("client send %s\n", buf.data);
-
     buffer_free(&buf);
 
     /* 4, load and send attachment files */
     for(i = 0; i < req.files; i++){
+        printf("[Client] Sending attachments: %s\n", req.filev[i]);
+        sleep(1);
+
         buffer_init(&buf);
         loadFile(&buf, req.filev[i], req.dirname);
         send_Msg(sock, &buf);
+
         buffer_free(&buf);
     }
 
@@ -102,32 +103,36 @@ void getCommand(char *comm){
 
 /* 2, fill request struct */
 int builtRequest(char * comm, Request * req){
-    char *head = NULL;
-    char *remain = NULL;
+    char *head, *remain;
+    int f = 1;
+
+    head = (char *) malloc(sizeof(char) * 8);
+    remain = (char *) malloc(sizeof(char) * 1024);
+    memset(head, 0, sizeof(char) * 8);
+    memset(remain, 0, sizeof(char) * 1024);
 
     head = strtok(comm, " ");
     if ((req->ptype = getCode(head)) == -1)
         return -1;
 
-    req->timeStamp = getSystemTime();
-
     while(remain = strtok(NULL, " ")){
+        if(f){
+            snprintf(req->dirname, strlen(remain) + 1, "%s", remain);
+            f = 0;
+            continue;
+        }
 
         if(strcmp(remain, LONG_MODE) == 0)
             req->lmode = 1;
-
         else if(strcmp(remain, FORCE_MODE) == 0)
             req->fmode = 1;
-
         else if(sourceFile(remain))
-            req->filev[req->files++] = remain;
-
-        else if(req->dirname == NULL)
-            req->dirname = remain;
-
+            snprintf(req->filev[req->files++], strlen(remain) + 1, "%s", remain);
         else
-            req->argv[req->args++] = remain;
+            snprintf(req->argv[req->args++], strlen(remain) + 1, "%s", remain);
     }
+    req->timeStamp = getSystemTime();
+
     return 1;
 }
 
@@ -195,8 +200,10 @@ int sourceFile(char * str){
 int loadFile(Buffer *buf, char *fileName, char *dirName){
     FILE *fPtr;
     int fileLen, nCount;
-    char fPath[125];
-    char *fTemp;
+    char *fPath, *fTemp;
+
+    fPath = (char *)malloc(sizeof(char) * 125);
+    memset(fPath, 0 ,sizeof(char) * 125);
     snprintf(fPath, 125, "./%s/%s", dirName, fileName);
 
     fPtr = fopen(fPath, "rb");
@@ -205,6 +212,7 @@ int loadFile(Buffer *buf, char *fileName, char *dirName){
 
     fileLen = getFileSize(fPtr);
     fTemp = (char*) malloc (sizeof(char) * fileLen);
+    memset(fTemp, 0, sizeof(char) * fileLen);
 
     if (fTemp == NULL)
         return -1;
@@ -213,7 +221,10 @@ int loadFile(Buffer *buf, char *fileName, char *dirName){
     if (nCount != fileLen)
         return -1;
 
+    buffer_append(buf, fTemp, fileLen);
     fclose(fPtr);
+    free(fTemp);
+    free(fPath);
     return 0;
 }
 
