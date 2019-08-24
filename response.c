@@ -11,7 +11,7 @@
 
 int recvResponse(Response *resp, Buffer *buf);
 int msgOutput(Response *resp);
-int timeCost(long long prev);
+long timeCost(long long prev);
 int getPname(short p, char *pname);
 
 void responseInit(Response *resp);
@@ -54,6 +54,9 @@ int msgOutput(Response *resp){
     int cost, offset, lineCount, bufferCount;
     char printBuffer[1024];//
 
+    p = (char *) malloc(sizeof(char) * 16);
+    memset(p, 0, sizeof(char) * 16);
+
     if(resp->success){
         offset = 0;
         lineCount = 0;
@@ -68,7 +71,8 @@ int msgOutput(Response *resp){
         getPname(resp->ptype, p);
         cost = timeCost(resp->timeStamp);
 
-        printf("[CLIENT] Command has %s returned in %d milliseconds.\n", p, cost);
+        printf("[Client] Command ' %s ' returned in %d milliseconds.\n", p, cost);
+        free(p);
 
         while ((c = resp->response[offset++])) {
 
@@ -131,23 +135,22 @@ int recvResponse(Response *resp, Buffer *buf){
 
 int getPname(short p, char *pname){
     switch(p){
-        case PUT : pname = "put";
+        case PUT : strcpy(pname, "put");
             break;
-        case GET : pname = "get";
+        case GET : strcpy(pname, "get");
             break;
-        case RUN : pname = "run";
+        case RUN : strcpy(pname, "run");
             break;
-        case LIST: pname = "list";
+        case LIST: strcpy(pname, "list");
             break;
-        case SYS : pname = "sys";
+        case SYS : strcpy(pname, "sys");
             break;
         default:
-            pname = "Unknown";
-
+            strcpy(pname, "Unknow");
     }
 }
 
-int timeCost(long long prev){
+long timeCost(long long prev){
     return getSystemTime() - prev;
 }
 
