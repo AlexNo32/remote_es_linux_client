@@ -97,7 +97,7 @@ int msgOutput(Response *resp){
                 continue;
             }
         }
-        printf("%s", printBuffer);
+        printf("%s\n", printBuffer);
     }else{
         printf("[DEBUG] Command exception...");
     }
@@ -108,7 +108,7 @@ int msgOutput(Response *resp){
 /* 2, write data into response */
 int recvResponse(Response *resp, Buffer *buf){
     char *tmp;
-    int nCount = 0;
+    int nCount = 0, replyLen = 0;
     tmp = malloc(25);
     memset(tmp, 0 ,25);
 
@@ -128,7 +128,11 @@ int recvResponse(Response *resp, Buffer *buf){
     resp->success = (short)atoi(tmp);
     memset(tmp, 0 ,1);
 
-    sscanf(buf->data + nCount, "%[^&]", resp->response);
+    sscanf(buf->data + nCount, "%[^&]", tmp);
+    replyLen = atoi(tmp);
+    nCount += strlen(tmp);
+
+    snprintf(resp->response, replyLen, "%s", buf->data + nCount);
 
     return 0;
 }

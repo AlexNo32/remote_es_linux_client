@@ -46,16 +46,18 @@ int make_request(SOCKET sock){
     buffer_free(&buf);
 
     /* 4, load and send attachment files */
-    for(i = 0; i < req.files; i++){
-        printf("[Client] Sending attachments: %s\n", req.filev[i]);
-        sleep(1);
+    if(req.ptype == PUT)
+        for(i = 0; i < req.files; i++){
 
-        buffer_init(&buf);
-        loadFile(&buf, req.filev[i], req.dirname);
-        send_Msg(sock, &buf);
+            printf("[Client] Sending attachments: %s\n", req.filev[i]);
+            sleep(1);
 
-        buffer_free(&buf);
-    }
+            buffer_init(&buf);
+            loadFile(&buf, req.filev[i], req.dirname);
+            send_Msg(sock, &buf);
+
+            buffer_free(&buf);
+        }
 
     /* free Request */
     requestFree(&req);
@@ -152,7 +154,7 @@ int sendRequest(Request *req, Buffer *buf){
 
     int i;
     for(i = 0; i < req->files; i ++){
-        if(fileExist(req->filev[i], req->dirname) > 0){
+        if(req->ptype == GET || fileExist(req->filev[i], req->dirname) > 0){
             buffer_append(buf, req->filev[i], strlen(req->filev[i]));
             buffer_append(buf, "&", 1);
         } else
@@ -202,9 +204,9 @@ int loadFile(Buffer *buf, char *fileName, char *dirName){
     int fileLen, nCount;
     char *fPath, *fTemp;
 
-    fPath = (char *)malloc(sizeof(char) * 125);
-    memset(fPath, 0 ,sizeof(char) * 125);
-    snprintf(fPath, 125, "./%s/%s", dirName, fileName);
+    fPath = (char *)malloc(sizeof(char) * 128);
+    memset(fPath, 0 ,sizeof(char) * 128);
+    snprintf(fPath, 128, "./%s/%s", dirName, fileName);
 
     fPtr = fopen(fPath, "rb");
     if (fPtr == NULL)
