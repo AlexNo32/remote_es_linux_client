@@ -88,18 +88,17 @@ int msgOutput(Response *resp){
                 lineCount ++;
 
             if (lineCount == 40) {
-                printf("%s\n", printBuffer);
-                printf("[INFO] Press any key to continue.\n");
+                printf("%s", printBuffer);
+                printf("[INFO] Press any key to continue.");
                 getchar();
                 lineCount = 0;
                 bufferCount = 0;
                 memset(printBuffer, 0, sizeof(char) * 1024);
-                continue;
             }
         }
         printf("%s\n", printBuffer);
     }else{
-        printf("[DEBUG] Command exception...");
+        printf("[DEBUG] Command exception...\n");
     }
 
     return 1;
@@ -130,7 +129,7 @@ int recvResponse(Response *resp, Buffer *buf){
 
     sscanf(buf->data + nCount, "%[^&]", tmp);
     replyLen = atoi(tmp);
-    nCount += strlen(tmp);
+    nCount += strlen(tmp) + 1;
 
     snprintf(resp->response, replyLen, "%s", buf->data + nCount);
 
