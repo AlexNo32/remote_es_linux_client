@@ -108,24 +108,24 @@ int msgOutput(Response *resp){
 int recvResponse(Response *resp, Buffer *buf){
     char *tmp;
     int nCount = 0, replyLen = 0;
-    tmp = malloc(25);
-    memset(tmp, 0 ,25);
+    tmp = malloc(64);
+    memset(tmp, 0 ,64);
 
     /* read timestamp */
     sscanf(buf->data, "%13s", tmp);
     resp->timeStamp = atoll(tmp);
-    memset(tmp, 0 ,13);
+    memset(tmp, 0 ,64);
     nCount += 13;
 
     /* read ptype */
     sscanf(buf->data + nCount++, "%1s", tmp);
     resp->ptype = (short)atoi(tmp);
-    memset(tmp, 0 ,1);
+    memset(tmp, 0 ,64);
 
     /* read flag */
     sscanf(buf->data + nCount++, "%1s", tmp);
     resp->success = (short)atoi(tmp);
-    memset(tmp, 0 ,1);
+    memset(tmp, 0 ,64);
 
     sscanf(buf->data + nCount, "%[^&]", tmp);
     replyLen = atoi(tmp);

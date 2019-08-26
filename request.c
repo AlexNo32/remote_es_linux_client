@@ -72,11 +72,11 @@ int make_request(SOCKET sock){
 void requestInit(Request *req){
     int i;
     memset(req, 0, sizeof(Request));
-    req->dirname = malloc(50);
-
+    req->dirname = malloc(64);
+    memset(req->dirname, 0, sizeof(char) * 64);
     for(i = 0; i < 10; i++){
-        req->argv[i] = malloc(50);
-        req->filev[i] = malloc(50);
+        req->argv[i] = malloc(64);
+        req->filev[i] = malloc(64);
     }
 }
 
@@ -148,9 +148,13 @@ int sendRequest(Request *req, Buffer *buf){
     buffer_append_short(buf, req->args);
     buffer_append_short(buf, req->files);
 
-    if(req->dirname != NULL){
+//    if(req->dirname != NULL){
+    if(strlen(req->dirname) != 0){
+        buffer_append_short(buf, 1);
         buffer_append(buf, req->dirname, strlen(req->dirname));
         buffer_append(buf, "&", 1);
+    }else{
+        buffer_append_short(buf,0);
     }
 
     int i;
