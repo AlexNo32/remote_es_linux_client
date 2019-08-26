@@ -150,11 +150,8 @@ int sendRequest(Request *req, Buffer *buf){
 
 //    if(req->dirname != NULL){
     if(strlen(req->dirname) != 0){
-        buffer_append_short(buf, 1);
         buffer_append(buf, req->dirname, strlen(req->dirname));
         buffer_append(buf, "&", 1);
-    }else{
-        buffer_append_short(buf,0);
     }
 
     int i;
