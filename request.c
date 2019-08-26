@@ -35,6 +35,7 @@ int make_request(SOCKET sock){
 
     /* 1, get user input */
     getCommand(comm);
+    check(strlen(comm) > 0, "[ERROR] Empty command.");
 
     /* 2, fill request struct */
     check(builtRequest(comm, &req) > 0, "[ERROR] Command undefined.");
@@ -118,7 +119,7 @@ int builtRequest(char * comm, Request * req){
         return -1;
 
     while(remain = strtok(NULL, " ")){
-        if(f){
+        if(f && strncmp(remain, "-", 1) != 0){
             snprintf(req->dirname, strlen(remain) + 1, "%s", remain);
             f = 0;
             continue;

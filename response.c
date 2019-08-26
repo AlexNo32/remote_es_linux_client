@@ -131,7 +131,7 @@ int recvResponse(Response *resp, Buffer *buf){
     replyLen = atoi(tmp);
     nCount += strlen(tmp) + 1;
 
-    snprintf(resp->response, replyLen, "%s", buf->data + nCount);
+    snprintf(resp->response, replyLen + 1, "%s", buf->data + nCount);
 
     return 0;
 }
