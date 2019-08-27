@@ -14,10 +14,10 @@ void process(SOCKET sock);
 void usage();
 
 /* main entry */
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     setbuf(stdout, NULL);
 
-    if(argc < 2){
+    if (argc < 2) {
         printf("[INFO] USAGE: $> client 'netclient host'.\n");
         return EXIT_FAILURE;
     }
@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 }
 
 /* communication with server */
-void process(SOCKET sock){
+void process(SOCKET sock) {
     /* file descriptor */
     fd_set read_flags, write_flags;
 
@@ -45,7 +45,7 @@ void process(SOCKET sock){
         FD_SET(sock, &read_flags);
         FD_SET(sock, &write_flags);
 
-        switch(select(sock + 1, &read_flags, &write_flags, (fd_set*) 0, &waitd)){
+        switch (select(sock + 1, &read_flags, &write_flags, (fd_set*)0, &waitd)) {
 
             case -1: //select failed.
                 printf("[ERROR] Client polling select function failed... \n");
@@ -66,7 +66,13 @@ void process(SOCKET sock){
                     FD_CLR(sock, &write_flags);
                     /* making a request (to server) */
                     make_request(sock);
+#ifdef WIN32
+                    Sleep(1000);
+#else
                     sleep(1);
+#endif // WIN32
+
+
                 }
         }
 

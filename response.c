@@ -9,15 +9,15 @@
  */
 #include "client.h"
 
-int recvResponse(Response *resp, Buffer *buf);
-int msgOutput(Response *resp);
-long timeCost(long long prev);
-int getPname(short p, char *pname);
+int recvResponse(Response* resp, Buffer* buf);
+int msgOutput(Response* resp);
+long long timeCost(long long prev);
+int getPname(short p, char* pname);
 
-void responseInit(Response *resp);
-void responseFree(Response *resp);
+void responseInit(Response* resp);
+void responseFree(Response* resp);
 
-int recv_response(SOCKET sock){
+int recv_response(SOCKET sock) {
     int quit;
     Response resp;
     Buffer buf;
@@ -39,31 +39,31 @@ int recv_response(SOCKET sock){
     return quit;
 }
 
-void responseInit(Response *resp){
+void responseInit(Response* resp) {
     memset(resp, 0, sizeof(Response));
     resp->response = malloc(5120);
 }
 
-void responseFree(Response *resp){
+void responseFree(Response* resp) {
     free(resp->response);
 }
 
 /* 3, output message from server */
-int msgOutput(Response *resp){
-    char *p, c;
+int msgOutput(Response* resp) {
+    char* p, c;
     int cost, offset, lineCount, bufferCount;
     char printBuffer[1024];//
 
-    p = (char *) malloc(sizeof(char) * 16);
+    p = (char*)malloc(sizeof(char) * 16);
     memset(p, 0, sizeof(char) * 16);
 
-    if(resp->success){
+    if (resp->success) {
         offset = 0;
         lineCount = 0;
         bufferCount = 0;
         memset(printBuffer, 0, sizeof(char) * 1024);
 
-        if(resp->ptype == QUIT){
+        if (resp->ptype == QUIT) {
             printf("[CLIENT] Client closing...\n");
             exit(EXIT_SUCCESS);
         }
@@ -76,16 +76,16 @@ int msgOutput(Response *resp){
 
         while ((c = resp->response[offset++])) {
 
-            if(bufferCount < sizeof(printBuffer))
+            if (bufferCount < sizeof(printBuffer))
                 printBuffer[bufferCount++] = c;
-            else{
+            else {
                 printf("%s", printBuffer);
                 bufferCount = 0;
                 memset(printBuffer, 0, sizeof(char) * 1024);
             }
 
-            if(c == '\n')
-                lineCount ++;
+            if (c == '\n')
+                lineCount++;
 
             if (lineCount == 40) {
                 printf("%s", printBuffer);
@@ -97,7 +97,8 @@ int msgOutput(Response *resp){
             }
         }
         printf("%s\n", printBuffer);
-    }else{
+    }
+    else {
         printf("[DEBUG] Command exception...\n");
     }
 
@@ -105,27 +106,27 @@ int msgOutput(Response *resp){
 }
 
 /* 2, write data into response */
-int recvResponse(Response *resp, Buffer *buf){
-    char *tmp;
+int recvResponse(Response* resp, Buffer* buf) {
+    char* tmp;
     int nCount = 0, replyLen = 0;
     tmp = malloc(64);
-    memset(tmp, 0 ,64);
+    memset(tmp, 0, 64);
 
     /* read timestamp */
     sscanf(buf->data, "%13s", tmp);
     resp->timeStamp = atoll(tmp);
-    memset(tmp, 0 ,64);
+    memset(tmp, 0, 64);
     nCount += 13;
 
     /* read ptype */
     sscanf(buf->data + nCount++, "%1s", tmp);
     resp->ptype = (short)atoi(tmp);
-    memset(tmp, 0 ,64);
+    memset(tmp, 0, 64);
 
     /* read flag */
     sscanf(buf->data + nCount++, "%1s", tmp);
     resp->success = (short)atoi(tmp);
-    memset(tmp, 0 ,64);
+    memset(tmp, 0, 64);
 
     sscanf(buf->data + nCount, "%[^&]", tmp);
     replyLen = atoi(tmp);
@@ -136,24 +137,26 @@ int recvResponse(Response *resp, Buffer *buf){
     return 0;
 }
 
-int getPname(short p, char *pname){
-    switch(p){
-        case PUT : strcpy(pname, "put");
+int getPname(short p, char* pname) {
+    switch (p) {
+        case PUT: strcpy(pname, "put");
             break;
-        case GET : strcpy(pname, "get");
+        case GET: strcpy(pname, "get");
             break;
-        case RUN : strcpy(pname, "run");
+        case RUN: strcpy(pname, "run");
             break;
         case LIST: strcpy(pname, "list");
             break;
-        case SYS : strcpy(pname, "sys");
+        case SYS: strcpy(pname, "sys");
             break;
         default:
             strcpy(pname, "Unknow");
     }
+
+    return 0;
 }
 
-long timeCost(long long prev){
+long long timeCost(long long prev) {
     return getSystemTime() - prev;
 }
 

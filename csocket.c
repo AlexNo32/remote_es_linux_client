@@ -13,9 +13,9 @@ int nonblock(SOCKET fd);
 void closeConnection(SOCKET sock);
 
 /* client connector */
-SOCKET connector(char *host) {
+SOCKET connector(char* host) {
     /* Initialize Winsock. */
-#ifdef WIN64
+#ifdef WIN32
     WSADATA wsaData;
 	check(NO_ERROR == WSAStartup(MAKEWORD(2, 2), &wsaData), "[ERROR] WSAStartup failed. \n");
 #endif
@@ -40,7 +40,7 @@ SOCKET connector(char *host) {
     printf("[INFO] Socket setting ... done. \n");
 
     /* Connect to server */
-    check(connect(connector, (SOCKADDR*)&addrClient, sizeof(addrClient)) == 0, "[ERROR] Cannot connect to server...\n");
+    check(connect(connector, (SOCKADDR*)& addrClient, sizeof(addrClient)) == 0, "[ERROR] Cannot connect to server...\n");
     printf("[INFO] Client socket connect to server: %d... \n", connector);
 
     /* non-block setting */
@@ -56,9 +56,9 @@ SOCKET connector(char *host) {
 
 /* non-block setting */
 int nonblock(SOCKET fd) {
-#ifdef WIN64
+#ifdef WIN32
     unsigned long nNonBlocking = 1;
-    return ioctlsocket(fd, FIONBIO, &nNonBlocking);// SOCKET_ERROR :-1
+	return ioctlsocket(fd, FIONBIO, &nNonBlocking);// SOCKET_ERROR :-1
 #else
     int flags = fcntl(fd, F_GETFL, 0);
     return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
@@ -66,8 +66,8 @@ int nonblock(SOCKET fd) {
 }
 
 /* clean up socket */
-void closeConnection(SOCKET sock){
-#ifdef WIN64
+void closeConnection(SOCKET sock) {
+#ifdef WIN32
     closesocket(sock);
 	WSACleanup(); //Clean up Winsock
 #else
@@ -76,18 +76,18 @@ void closeConnection(SOCKET sock){
 }
 
 /* receive message */
-int recv_Msg(SOCKET sockFd, Buffer *buf){
+int recv_Msg(SOCKET sockFd, Buffer* buf) {
     int nCount;
-    char *sockData;
-    sockData = (char *)malloc(sizeof(char) * STDBUF);
+    char* sockData;
+    sockData = (char*)malloc(sizeof(char) * STDBUF);
     memset(sockData, 0, sizeof(char) * STDBUF);
 
-    while(1){
+    while (1) {
         nCount = recv(sockFd, sockData, STDBUF, 0);
         buffer_append(buf, sockData, strlen(sockData));
         memset(sockData, 0, sizeof(char) * STDBUF);
 
-        if(nCount < STDBUF)
+        if (nCount < STDBUF)
             break;
     }
 
@@ -96,8 +96,8 @@ int recv_Msg(SOCKET sockFd, Buffer *buf){
 }
 
 /* send message */
-int send_Msg(SOCKET sockFd, Buffer *buf){
-    if(send(sockFd, buf->data, buf->size, 0) == -1){
+int send_Msg(SOCKET sockFd, Buffer* buf) {
+    if (send(sockFd, buf->data, buf->size, 0) == -1) {
         perror("[ERROR] send failed ");
         return -1;
     }

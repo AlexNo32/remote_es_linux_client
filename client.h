@@ -15,9 +15,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/timeb.h>
 #include "stringbuffer.h"
 
-#ifdef WIN64
+#ifdef WIN32
 #include <winsock2.h>
 #include <windows.h>
 #include <io.h>
@@ -31,7 +32,6 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <sys/timeb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 
@@ -46,16 +46,16 @@ typedef struct sockaddr SOCKADDR;
 #define STDBUF 1024
 
 //#define "put" 4, "get" 5, "run" 6, "list" 7, "sys" 8, "quit" 9
-enum PTYPE{
+enum PTYPE {
     PUT = 4, GET, RUN, LIST, SYS, QUIT
 };
 
-SOCKET connector(char *host);
+SOCKET connector(char* host);
 int make_request(SOCKET sock);
 int recv_response(SOCKET sock);
 
-int recv_Msg(SOCKET sockFd, Buffer *buf);
-int send_Msg(SOCKET sockFd, Buffer *buf);
+int recv_Msg(SOCKET sockFd, Buffer* buf);
+int send_Msg(SOCKET sockFd, Buffer* buf);
 
 
 long long getSystemTime();
@@ -75,18 +75,18 @@ typedef struct {
     unsigned short ptype; // [4 - 9]
     unsigned short fmode; // 1: On, 0: Off
     unsigned short lmode; // 1: On, 0: Off
-    char * dirname; // folder name
+    char* dirname; // folder name
     unsigned short args;
     unsigned short files;
-    char *argv[10];
-    char *filev[10];
+    char* argv[10];
+    char* filev[10];
 } Request;
 
 typedef struct {
     unsigned long timeStamp; // length :13
     unsigned short ptype; // [4 - 9]
     unsigned short success; // 1/0 cmd execute success or not
-    char *response; // response message
+    char* response; // response message
 } Response;
 
 #define LONG_MODE "-l"
