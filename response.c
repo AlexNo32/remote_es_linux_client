@@ -46,7 +46,7 @@ void responseInit(Response* resp) {
 }
 
 void responseFree(Response* resp) {
-    free(resp->response);
+   // free(resp->response);
 }
 
 /* 3, output message from server */
