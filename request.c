@@ -75,11 +75,13 @@ int make_request(SOCKET sock) {
 void requestInit(Request* req) {
     int i;
     memset(req, 0, sizeof(Request));
-    req->dirname = malloc(64);
+    req->dirname = (char *)malloc(sizeof(char) * 64);
     memset(req->dirname, 0, sizeof(char) * 64);
     for (i = 0; i < 10; i++) {
         req->argv[i] = malloc(64);
+        memset(req->argv[i], 0, sizeof(char) * 64);
         req->filev[i] = malloc(64);
+        memset(req->filev[i], 0, sizeof(char) * 64);
     }
 }
 
@@ -178,7 +180,17 @@ int sendRequest(Request* req, Buffer* buf) {
 long long getSystemTime() {
     struct timeb time;
     ftime(&time);
+#ifdef WIN32
+    char tb[14];
+	char* eptr;
+
+	_i64toa(time.time, tb, 10);
+	_itoa(time.millitm, tb + 10, 10);
+
+	return strtoll(tb, &eptr, 10);
+#else
     return time.time * 1000 + time.millitm;
+#endif // WIN32
 }
 
 int getCode(char* ptype) {

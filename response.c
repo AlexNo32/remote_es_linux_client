@@ -41,7 +41,8 @@ int recv_response(SOCKET sock) {
 
 void responseInit(Response* resp) {
     memset(resp, 0, sizeof(Response));
-    resp->response = malloc(5120);
+    resp->response = (char *)malloc(sizeof(char) * 5120);
+    memset(resp->response, 0, sizeof(char) * 5120);
 }
 
 void responseFree(Response* resp) {
@@ -109,31 +110,35 @@ int msgOutput(Response* resp) {
 int recvResponse(Response* resp, Buffer* buf) {
     char* tmp;
     int nCount = 0, replyLen = 0;
-    tmp = malloc(64);
-    memset(tmp, 0, 64);
+    tmp = (char *)malloc(sizeof(char) * 64);
+    memset(tmp, 0, sizeof(char) * 64);
 
     /* read timestamp */
-    sscanf(buf->data, "%13s", tmp);
-    resp->timeStamp = atoll(tmp);
-    memset(tmp, 0, 64);
-    nCount += 13;
+    if(sscanf(buf->data, "%13s", tmp) > 0){
+        resp->timeStamp = atoll(tmp);
+        memset(tmp, 0, sizeof(char) * 64);
+        nCount += 13;
+    }
 
     /* read ptype */
-    sscanf(buf->data + nCount++, "%1s", tmp);
-    resp->ptype = (short)atoi(tmp);
-    memset(tmp, 0, 64);
+    if(sscanf(buf->data + nCount++, "%1s", tmp) > 0){
+        resp->ptype = (short)atoi(tmp);
+        memset(tmp, 0, sizeof(char) * 64);
+    }
 
     /* read flag */
-    sscanf(buf->data + nCount++, "%1s", tmp);
-    resp->success = (short)atoi(tmp);
-    memset(tmp, 0, 64);
+    if(sscanf(buf->data + nCount++, "%1s", tmp) > 0){
+        resp->success = (short)atoi(tmp);
+        memset(tmp, 0, sizeof(char) * 64);
+    }
 
-    sscanf(buf->data + nCount, "%[^&]", tmp);
-    replyLen = atoi(tmp);
-    nCount += strlen(tmp) + 1;
-
+    if(sscanf(buf->data + nCount, "%[^&]", tmp) > 0){
+        replyLen = atoi(tmp);
+        nCount += strlen(tmp) + 1;
+    }
     snprintf(resp->response, replyLen + 1, "%s", buf->data + nCount);
 
+    free(tmp);
     return 0;
 }
 
